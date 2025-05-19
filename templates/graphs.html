@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Device Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-actions {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions p {
+            flex: 1;
+            margin: 0;
+        }
+
+        .header a.btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .header .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .header .btn-primary:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .header .btn-info {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .header .btn-info:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+        }
+
+        .header .btn-dark {
+            background-color: var(--dark-color);
+            color: white;
+        }
+
+        .header .btn-dark:hover {
+            background-color: #1a252f;
+            transform: scale(1.05);
+        }
+
+        .header .btn+.btn {
+            margin-left: 10px;
+        }
+
+        .header .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .header .btn-danger:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .header a.btn {
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .header a.btn i {
+            font-size: 1rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+
+        .large-card {
+            grid-column: span 4;
+        }
+
+        .medium-card {
+            grid-column: span 4;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .metrics-row {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .metric-card {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .add-device-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: none;
+            text-decoration: none;
+
+        }
+
+        .add-device-btn:hover {
+            background-color: #2980b9;
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 1200px) {
+            .large-card {
+                grid-column: span 12;
+            }
+
+            .medium-card {
+                grid-column: span 6;
+            }
+
+            .metrics-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .medium-card {
+                grid-column: span 12;
+            }
+
+            .add-device-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+    <body>
+        <div class="dashboard">
+            <header class="header">
+                <h1>Device Inventory Dashboard</h1>
+                <div class="header-actions">
+                    <p>Comprehensive overview of device inventory and status</p>
+                    <a href="{{ url_for('view_data') }}" class="btn btn-primary">
+                        View Data
+                    </a>
+                    {% if user.role == 'admin' %}
+                    <a href="{{ url_for('settings') }}" class="btn btn-primary">
+                        Settings
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                        Logout
+                    </a>
+                </div>
+            </header>
+
+
+            <!-- Rest of your dashboard content -->
+            <a href="{{ url_for('form') }}" class="add-device-btn" title="Add New Device">+</a>
+
+            <div class="metrics-row">
+                <div class="metric-card">
+                    <div class="metric-label">Total Devices</div>
+                    <div class="metric-value">999</div>
+                    <div class="metric-label">+12% from last month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active Devices</div>
+                    <div class="metric-value">982</div>
+                    <div class="metric-label">78.7% of total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Needs Maintenance</div>
+                    <div class="metric-value">87</div>
+                    <div class="metric-label">6.9% of total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Regions</div>
+                    <div class="metric-value">6</div>
+                    <div class="metric-label">North America largest</div>
+                </div>
+            </div>
+
+            <div class="card large-card">
+                <div class="card-header">Device Count by Type</div>
+                <img src="{{ url_for('static', filename='images/device_type.png') }}" alt="Device Type Chart">
+            </div>
+
+            <div class="card large-card">
+                <div class="card-header">Devices by Region</div>
+                <img src="{{ url_for('static', filename='images/region_bar.png') }}" alt="Region Chart">
+            </div>
+
+            <div class="card medium-card">
+                <div class="card-header">Device Condition Distribution</div>
+                <img src="{{ url_for('static', filename='images/condition_pie.png') }}" alt="Condition Pie Chart">
+            </div>
+
+            <a href="{{ url_for('form') }}" class="add-device-btn" id="addDeviceBtn" title="Add New Device">+</a>
+
+        </div>
+
+    </body>
+</html>
