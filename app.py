@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, Response, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from functools import wraps
 from flask import make_response
@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import io
 
 app = Flask(__name__)
 app.secret_key = 'Qwertyuiop1234567890'
@@ -386,6 +387,60 @@ def index():
     plt.close()
 
     return render_template("graphs.html", user=current_user)
+@app.route('/export-csv')
+def export_csv():
+    # Connect to SQLite DB and read the table into a DataFrame
+    conn = sqlite3.connect('devices.db')
+    df = pd.read_sql_query("SELECT * FROM devicedata", conn)
+    conn.close()
+
+    # Set readable column names
+    df.columns = [
+        "ID", "Device_Name", "Asset_ID", "Device_Type", "Model_Name", "Model_Version",
+        "MAC_Address", "WiFi_Mode", "Supported_Bands", "Spatial_Streams", "Max_PHY_Rate",
+        "Chipset", "OS_Version", "Bandwidth", "Region", "Purchase_Date", "Model_Year",
+        "Features", "Condition", "Controlled_App", "Remarks", "Battery", "Connection",
+        "Location"
+    ]
+
+    # Convert DataFrame to CSV in memory
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_buffer.seek(0)
+
+    return Response(
+        csv_buffer,
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment; filename=device_inventory.csv"}
+    )
+@app.route('/export-excel')
+def export_excel():
+    # Connect to SQLite and read the table into a DataFrame
+    conn = sqlite3.connect('devices.db')
+    df = pd.read_sql_query("SELECT * FROM devicedata", conn)
+    conn.close()
+
+    # Rename columns
+    df.columns = [
+        "ID", "Device_Name", "Asset_ID", "Device_Type", "Model_Name", "Model_Version",
+        "MAC_Address", "WiFi_Mode", "Supported_Bands", "Spatial_Streams", "Max_PHY_Rate",
+        "Chipset", "OS_Version", "Bandwidth", "Region", "Purchase_Date", "Model_Year",
+        "Features", "Condition", "Controlled_App", "Remarks", "Battery", "Connection",
+        "Location"
+    ]
+
+    # Create an Excel file in memory
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='DeviceData')
+
+    excel_buffer.seek(0)
+
+    return Response(
+        excel_buffer,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={"Content-Disposition": "attachment; filename=device_inventory.xlsx"}
+    )
 
 if __name__ == '__main__':
     init_db()

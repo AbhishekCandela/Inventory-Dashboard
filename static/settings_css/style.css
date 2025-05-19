@@ -1,0 +1,64 @@
+
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --accent-color: #e74c3c;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+}
+
+        .settings {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    ;
+    text-align: center;
+}
+
+th {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    font-weight: bold;
+    text-align: center;
+}
+
+a {
+    margin-right: 10px;
+}
+.header {
+    grid-column: 1 / -1;
+    background-color: var(--dark-color);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.header-subrow {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.header-subrow p {
+    flex: 1;
+    margin: 0;
+}
