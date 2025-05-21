@@ -3,73 +3,156 @@
 
 <head>
     <title>Device Dashboard</title>
-   <link rel="stylesheet" href="static/graphs_css/style.css">
+    <link rel="stylesheet" href="static/graphs_css/style.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-    <body>
-        <div class="dashboard">
-            <header class="header">
-                <div class="header-left">
-                    <h1>Device Inventory Dashboard</h1>
-                    <p>Comprehensive overview of device inventory and status</p>
-                </div>
-                <div class="header-actions">
-                    <a href="{{ url_for('view_data') }}" class="btn btn-primary">
-                        View Data
-                    </a>
-                    {% if user.role == 'admin' %}
-                    <a href="{{ url_for('settings') }}" class="btn btn-primary">
-                        Settings
-                    </a>
-                    {% endif %}
-                    <a href="{{ url_for('logout') }}" class="btn btn-danger">
-                        Logout
-                    </a>
-                </div>
-            </header>
-            <!-- Rest of your dashboard content -->
-            <a href="{{ url_for('form') }}" class="add-device-btn" title="Add New Device">+</a>
-
-            <div class="metrics-row">
-                <div class="metric-card">
-                    <div class="metric-label">Total Devices</div>
-                    <div class="metric-value">999</div>
-                    <div class="metric-label">+12% from last month</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Active Devices</div>
-                    <div class="metric-value">982</div>
-                    <div class="metric-label">78.7% of total</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Needs Maintenance</div>
-                    <div class="metric-value">87</div>
-                    <div class="metric-label">6.9% of total</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Regions</div>
-                    <div class="metric-value">6</div>
-                    <div class="metric-label">North America largest</div>
-                </div>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <div class="header-left">
+                <h1>Device Inventory Dashboard</h1>
+                <p>Comprehensive overview of device inventory and status</p>
             </div>
-
-            <div class="card large-card">
-                <div class="card-header">Device Count by Type</div>
-                <img src="{{ url_for('static', filename='images/device_type.png') }}" alt="Device Type Chart">
+            <div class="header-actions">
+                <a href="{{ url_for('view_data') }}" class="btn btn-primary">View Data</a>
+                {% if user.role == 'admin' %}
+                <a href="{{ url_for('settings') }}" class="btn btn-primary">Settings</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
             </div>
+        </header>
 
-            <div class="card large-card">
-                <div class="card-header">Devices by Region</div>
-                <img src="{{ url_for('static', filename='images/region_bar.png') }}" alt="Region Chart">
+        <a href="{{ url_for('form') }}" class="add-device-btn" title="Add New Device">+</a>
+
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-label">Total Devices</div>
+                <div class="metric-value">{{ total_devices }}</div>
+                <div class="metric-label">Current inventory count</div>
             </div>
-
-            <div class="card medium-card">
-                <div class="card-header">Device Condition Distribution</div>
-                <img src="{{ url_for('static', filename='images/condition_pie.png') }}" alt="Condition Pie Chart">
+            <div class="metric-card">
+                <div class="metric-label">Device Types</div>
+                <div class="metric-value">{{ device_types_count }}</div>
+                <div class="metric-label">Unique categories in inventory</div>
             </div>
-
-            <a href="{{ url_for('form') }}" class="add-device-btn" id="addDeviceBtn" title="Add New Device">+</a>
-
+            <div class="metric-card">
+                <div class="metric-label">Regions Covered</div>
+                <div class="metric-value">{{ regions_count }}</div>
+                <div class="metric-label">Geographic coverage</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Top WiFi Mode</div>
+                <div class="metric-value">{{ most_common_wifi_mode }}</div>
+                <div class="metric-label">Most used wireless standard</div>
+            </div>
         </div>
 
-    </body>
+        <div class="card large-card">
+            <div class="card-header">Device Count by Type</div>
+            <canvas id="deviceTypeChart"></canvas>
+        </div>
+        <div class="card large-card">
+            <div class="card-header">Wi-Fi Modes Distribution</div>
+            <canvas id="wifiModeChart"></canvas>
+        </div>
+        <div class="card medium-card">
+            <div class="card-header">Device Condition Distribution</div>
+            <canvas id="conditionChart"></canvas>
+        </div>
+ 
+        <a href="{{ url_for('form') }}" class="add-device-btn" id="addDeviceBtn" title="Add New Device">+</a>
+    </div>
+
+    <script>
+        fetch('/api/devices')
+            .then(res => res.json())
+            .then(data => {
+                // Device Type Chart
+                console.log(data)
+                const deviceTypeCounts = {};
+                data.forEach(item => {
+                    const type = item.device_type || 'Unknown';
+                    deviceTypeCounts[type] = (deviceTypeCounts[type] || 0) + 1;
+                });
+                new Chart(document.getElementById('deviceTypeChart').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(deviceTypeCounts),
+                        datasets: [{
+                            label: 'Device Types',
+                            data: Object.values(deviceTypeCounts),
+                            backgroundColor: '#4B9CD3'
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+
+                // Condition Chart
+                const conditionCounts = {};
+                data.forEach(item => {
+                    const condition = item.condition || 'Unknown';
+                    conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
+                });
+                new Chart(document.getElementById('conditionChart').getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(conditionCounts),
+                        datasets: [{
+                            data: Object.values(conditionCounts),
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+                // Wi-Fi Modes Chart (Doughnut)
+// Wi-Fi Modes Doughnut Chart
+    const wifiModeCounts = {};
+    data.forEach(item => {
+        const mode = item.wifi_mode?.trim() || 'Unknown';
+        wifiModeCounts[mode] = (wifiModeCounts[mode] || 0) + 1;
+    });
+
+    const wifiModesCtx = document.getElementById('wifiModeChart');
+    if (wifiModesCtx) {
+        new Chart(wifiModesCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(wifiModeCounts),
+                datasets: [{
+                    data: Object.values(wifiModeCounts),
+                    backgroundColor: [
+                        '#4CAF50', '#2196F3', '#FF9800', '#9C27B0',
+                        '#E91E63', '#00BCD4', '#FFC107', '#795548'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Wi-Fi Modes Distribution'
+                    }
+                },
+                cutout: '60%' // Ring style
+            }
+        });
+    } else {
+        console.error("Element with ID 'wifiModeChart' not found.");
+    }
+
+
+                });
+    </script>
+</body>
 </html>

@@ -201,13 +201,11 @@
             text-decoration: none;
 
         }
-
         .add-device-btn:hover {
             background-color: #2980b9;
             transform: scale(1.1);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
         }
-
         @media (max-width: 1200px) {
             .large-card {
                 grid-column: span 12;
@@ -234,5 +232,6 @@
                 bottom: 20px;
                 right: 20px;
             }
+
         }
    

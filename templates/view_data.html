@@ -31,12 +31,10 @@
                     <label for="wifi-mode"><i class="fas fa-wifi"></i> WiFi Mode</label>
                     <select id="wifi-mode">
                         <option value="">All Modes</option>
-                        <option value="802.11a">802.11a</option>
-                        <option value="802.11b">802.11b</option>
-                        <option value="802.11g">802.11g</option>
                         <option value="802.11n">802.11n</option>
                         <option value="802.11ac">802.11ac</option>
                         <option value="802.11ax">802.11ax</option>
+                        <option value="802.11be">802.11be</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -54,7 +52,7 @@
                     <label for="model-year"><i class="fas fa-calendar-alt"></i> Model Year</label>
                     <select id="model-year">
                         <option value="">All Years</option>
-                        <option value="2023">2023</option>
+                        <option value="2012">2012</option>
                         <option value="2022">2022</option>
                         <option value="2021">2021</option>
                         <option value="2020">2020</option>
@@ -65,10 +63,32 @@
                     <label for="device-type"><i class="fas fa-server"></i> Device Type</label>
                     <select id="device-type">
                         <option value="">All Types</option>
-                        <option value="Router">Router</option>
-                        <option value="Access Point">Access Point</option>
-                        <option value="Client Device">Client Device</option>
-                        <option value="IoT Device">IoT Device</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Laptop">Laptop</option>
+                    <option value="Iot Device">Iot Device</option>
+                    <option value="Smart Appliance">Smart Appliance</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="spatial-streams"><i class="fas fa-signal"></i>Spatial Streams</label>
+                    <select id="spatial-streams">
+                        <option value="">All Streams</option>
+                        <option value="1*1">1*1</option>
+                        <option value="2*2">2*2</option>
+                        <option value="3*3">3*3</option>
+                        <option value="4*4">4*4</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="supported-bandwidth"><i class="fas fa-tachometer-alt"></i>Supported Bandwidth</label>
+                    <select id="supported-bandwidth">
+                        <option value="">All Bandwidth</option>
+                        <option value="20 MHz">20 MHz</option>
+                        <option value="40 MHz">40 MHz</option>
+                        <option value="80 MHz">80 MHz</option>
+                        <option value="160 MHz">160 MHz</option>
+                        <option value="240 MHz">240 MHz</option>
+                        <option value="320 MHz">320 MHz</option>
                     </select>
                 </div>
             </div>
@@ -171,19 +191,21 @@
                 const chipset = $('#chipset').val().toLowerCase();
                 const modelYear = $('#model-year').val().toLowerCase();
                 const deviceType = $('#device-type').val().toLowerCase();
-
+                const spatialStreams=$('#spatial-streams').val().toLowerCase();
+                const supportedBandwidth=$('#supported-bandwidth').val().toLowerCase();
                 let matchCount = 0;
-
                 $('#device-table tbody tr').each(function () {
                     const $row = $(this);
                     const rowWifiMode = $row.find('td:eq(7)').text().toLowerCase();
                     const rowChipset = $row.find('td:eq(11)').text().toLowerCase();
                     const rowModelYear = $row.find('td:eq(16)').text().toLowerCase();
                     const rowDeviceType = $row.find('td:eq(3)').text().toLowerCase();
+                    const rowspatialStreams = $row.find('td:eq(9)').text().toLowerCase();
+                    const rowsupportedBandwidth=$row.find('td:eq(13)').text().toLowerCase();
 
                     let matchesFilter = true;
 
-                    if (wifiMode && !rowWifiMode.includes(wifiMode)) {
+                    if (wifiMode && rowWifiMode !=wifiMode) {
                         matchesFilter = false;
                     }
                     if (chipset && !rowChipset.includes(chipset)) {
@@ -195,7 +217,14 @@
                     if (deviceType && !rowDeviceType.includes(deviceType)) {
                         matchesFilter = false;
                     }
-
+                    if(spatialStreams && !rowspatialStreams.includes(spatialStreams))
+                    {
+                        matchesFilter=false;
+                    }
+                    if(supportedBandwidth && !rowsupportedBandwidth.includes(supportedBandwidth))
+                    {
+                        matchesFilter=false;
+                    }
                     if (matchesFilter) {
                         $row.removeClass('filter-no-match').addClass('filter-match');
                         matchCount++;

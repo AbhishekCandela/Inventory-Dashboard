@@ -208,11 +208,41 @@ def get_devices():
     conn.close()
     return jsonify(devices)
 
-@app.route('/dashboard')
+@app.route('/index')
 @no_cache
 @login_required
 def dashboard():
-    return render_template('graphs.html')
+    conn = sqlite3.connect('devices.db')
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM devicedata")
+    total_devices = c.fetchone()[0]
+    
+    c.execute("""
+    SELECT COUNT(*) FROM devicedata 
+    WHERE purchase_date >= date('now', '-1 year')
+""")
+    recent_devices = c.fetchone()[0]
+    percent_recent = (recent_devices / total_devices) * 100 if total_devices > 0 else 0
+    
+    c.execute("""
+    SELECT wifi_mode, COUNT(*) as count 
+    FROM devicedata 
+    GROUP BY wifi_mode 
+    ORDER BY count DESC LIMIT 1
+""")
+    most_common_wifi_mode = c.fetchone()
+    most_common_wifi_mode = most_common_wifi_mode[0] if most_common_wifi_mode else "N/A"
+
+    c.execute("SELECT COUNT(DISTINCT region) FROM devicedata")
+    regions_count = c.fetchone()[0]
+
+    
+    c.execute("SELECT COUNT(DISTINCT device_type) FROM devicedata")
+    device_types_count = c.fetchone()[0]
+    
+    conn.close()
+
+    return render_template('graphs.html',total_devices=total_devices,device_types_count=device_types_count,regions_count=regions_count,user=current_user,percent_recent=percent_recent,most_common_wifi_mode=most_common_wifi_mode)
 
 @app.route('/register', methods=['GET', 'POST'])
 @no_cache
@@ -265,7 +295,9 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
-
+@app.route('/')
+def home():
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 @login_required
@@ -273,13 +305,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
-# @app.route('/', methods=['GET', 'POST'])
-# @login_required
-# @no_cache
-# def index():
-#     return render_template('dashboard.html', user=current_user)
-
 @app.route('/form', methods=['GET', 'POST'])
 @login_required
 @no_cache
@@ -329,10 +354,11 @@ def form():
     
     conn = sqlite3.connect('devices.db')
     c = conn.cursor()
-    c.execute('SELECT * FROM device')
+    c.execute('SELECT * FROM devicedata')  # ✅ fixed
     devices = c.fetchall()
     conn.close()
     return render_template('form.html', devices=devices, user=current_user)
+
 
 @app.route('/view_data')
 @no_cache
@@ -343,6 +369,64 @@ def view_data():
     rows = c.fetchall()
     conn.close()
     return render_template('view_data.html', rows=rows)
+
+@app.route('/api/devices')
+def get_device():
+    conn = sqlite3.connect('devices.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM devicedata")
+    rows = c.fetchall()
+    conn.close()
+    data = [dict(row) for row in rows]
+    return jsonify(data)
+@app.route('/submit', methods=['POST'])
+@login_required
+@no_cache
+def submit():
+    if request.method == 'POST':
+        bands = ", ".join(sorted(request.form.getlist('supported_bands'))) if request.form.getlist('supported_bands') else "None"
+        data_values = [
+            request.form['devicename'],
+            request.form['asset_id'],
+            request.form['device_type'],
+            request.form['model_name'],
+            request.form['model_version'],
+            request.form['mac_address'],
+            request.form['wifi_mode'],
+            bands,
+            request.form['spatial_streams'],
+            request.form['max_phy_rate'],
+            request.form['chipset'],
+            request.form['os_version'],
+            request.form['bandwidth'],
+            request.form['region'],
+            request.form['purchase_date'],
+            request.form['model_year'],
+            request.form['features'],
+            request.form['condition'],
+            request.form['controlled_app'],
+            request.form['remarks'],
+            request.form['battery'],
+            request.form['connection'],
+            request.form['location']
+        ]
+
+        conn = sqlite3.connect('devices.db')
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO devicedata (
+                devicename, asset_id, device_type, model_name, model_version,
+                mac_address, wifi_mode, supported_bands, spatial_streams,
+                max_phy_rate, chipset, os_version, bandwidth, region,
+                purchase_date, model_year, features, condition, controlled_app,
+                remarks, battery, connection, location
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', data_values)
+        conn.commit()
+        conn.close()
+
+        return redirect('/index') 
 
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
@@ -387,6 +471,7 @@ def index():
     plt.close()
 
     return render_template("graphs.html", user=current_user)
+
 @app.route('/export-csv')
 def export_csv():
     # Connect to SQLite DB and read the table into a DataFrame
@@ -441,6 +526,7 @@ def export_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         headers={"Content-Disposition": "attachment; filename=device_inventory.xlsx"}
     )
+
 
 if __name__ == '__main__':
     init_db()
