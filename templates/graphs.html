@@ -357,56 +357,56 @@
             }
         }
 
-let regionChart;
+        let regionChart;
 
-function updateRegionChart(data) {
-    const regionCounts = {};
-    data.forEach(item => {
-        const region = item.region || 'Unknown';
-        regionCounts[region] = (regionCounts[region] || 0) + 1;
-    });
+        function updateRegionChart(data) {
+            const regionCounts = {};
+            data.forEach(item => {
+                const region = item.region || 'Unknown';
+                regionCounts[region] = (regionCounts[region] || 0) + 1;
+            });
 
-    const labels = Object.keys(regionCounts);
-    const values = Object.values(regionCounts);
+            const labels = Object.keys(regionCounts);
+            const values = Object.values(regionCounts);
 
-    if (regionChart) {
-        regionChart.data.labels = labels;
-        regionChart.data.datasets[0].data = values;
-        regionChart.update();
-    } else {
-        const ctx = document.getElementById('regionChart').getContext('2d');
-        regionChart = new Chart(ctx, {
-            type: 'bar', // You can change this to 'pie' if preferred
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Devices per Region',
-                    data: values,
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
+            if (regionChart) {
+                regionChart.data.labels = labels;
+                regionChart.data.datasets[0].data = values;
+                regionChart.update();
+            } else {
+                const ctx = document.getElementById('regionChart').getContext('2d');
+                regionChart = new Chart(ctx, {
+                    type: 'bar', // You can change this to 'pie' if preferred
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Devices per Region',
+                            data: values,
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                            ]
+                        }]
                     },
-                    title: {
-                        display: true,
-                        text: 'Number of Devices by Region'
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Devices by Region'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                });
             }
-        });
-    }
-}
+        }
 
         
         // Initialize the dashboard when the page loads
