@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, Response, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from functools import wraps
 from flask import make_response
@@ -269,6 +269,10 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 @no_cache
 def login():
+    if current_user.is_authenticated:
+            logout_user()
+            session.clear()
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
