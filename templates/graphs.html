@@ -64,9 +64,6 @@
             
             <button class="reset-filters" id="resetFilters">Reset Filters</button>
         </div>
-
-        <a href="{{ url_for('form') }}" class="add-device-btn" title="Add New Device">+</a>
-
         <div class="metrics-row">
             <div class="metric-card">
                 <div class="metric-label" style="font-weight: bold;">Total Devices</div>
@@ -107,7 +104,9 @@
             <canvas id="regionChart" height="250" width="300"></canvas>
         </div>
         
+        {% if user.role == 'admin' %}
         <a href="{{ url_for('form') }}" class="add-device-btn" id="addDeviceBtn" title="Add New Device">+</a>
+        {% endif %}
     </div>
 
     <script>
