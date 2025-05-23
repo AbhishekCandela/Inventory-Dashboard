@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, Response, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from functools import wraps
 from flask import make_response
@@ -269,6 +269,10 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 @no_cache
 def login():
+    if current_user.is_authenticated:
+            logout_user()
+            session.clear()
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -432,44 +436,6 @@ def submit():
 @login_required
 @no_cache
 def index():
-    conn = sqlite3.connect('devices.db')
-    df = pd.read_sql_query("SELECT * FROM devicedata", conn)
-    conn.close()
-
-    df.columns = [
-        "ID", "Device_Name", "Asset_ID", "Device_Type", "Model_Name", "Model_Version",
-        "MAC_Address", "WiFi_Mode", "Supported_Bands", "Spatial_Streams", "Max_PHY_Rate",
-        "Chipset", "OS_Version", "Bandwidth", "Region", "Purchase_Date", "Model_Year",
-        "Features", "Condition", "Controlled_App", "Remarks", "Battery", "Connection",
-        "Location"
-    ]
-
-    # Plot 1: Device Count by Type
-    plt.figure(figsize=(8, 5))
-    sns.countplot(y='Device_Type', data=df, order=df['Device_Type'].value_counts().index)
-    plt.title('Device Count by Type')
-    plt.tight_layout()
-    plt.savefig('static/images/device_type.png')
-    plt.close()
-
-    # Plot 2: Condition Pie Chart
-    plt.figure(figsize=(6, 6))
-    df['Condition'].value_counts().plot(kind='pie', autopct='%1.1f%%')
-    plt.title('Device Condition Distribution')
-    plt.ylabel('')
-    plt.tight_layout()
-    plt.savefig('static/images/condition_pie.png')
-    plt.close()
-
-    # Plot 3: Devices by Region
-    plt.figure(figsize=(10, 7))
-    sns.countplot(x='Region', data=df, order=df['Region'].value_counts().index)
-    plt.title('Devices by Region')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig('static/images/region_bar.png')
-    plt.close()
-
     return render_template("graphs.html", user=current_user)
 
 @app.route('/export-csv')
@@ -530,4 +496,4 @@ def export_excel():
 
 if __name__ == '__main__':
     init_db()
-    app.run(port=5003, debug=True)
+    app.run(port=5004, debug=True)
